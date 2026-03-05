@@ -493,7 +493,7 @@ elif page == "Model Information":
         
         3. **Threshold Optimization**
            - Tuned decision threshold for optimal precision-recall balance
-           - Identified optimal threshold as 0.84 for fraud detection
+           - Identified optimal threshold as 0.93 for fraud detection
         """)
     
     st.divider()
@@ -509,7 +509,7 @@ elif page == "Model Information":
     with col1:
         st.metric(
             "AUC-ROC Score",
-            "0.972",
+            "0.977",
             delta="Excellent",
             delta_color="normal"
         )
@@ -517,7 +517,7 @@ elif page == "Model Information":
     with col2:
         st.metric(
             "F1 Score (Fraud)",
-            "0.91",
+            "0.86",
             delta="Very Good",
             delta_color="normal"
         )
@@ -525,15 +525,15 @@ elif page == "Model Information":
     with col3:
         st.metric(
             "Precision",
-            "0.88",
-            help="88% of flagged transactions are actually fraud"
+            "0.96",
+            help="96% of flagged transactions are actually fraud"
         )
     
     with col4:
         st.metric(
             "Recall",
-            "0.94",
-            help="94% of fraud cases are caught"
+            "0.90",
+            help="90% of fraud cases are caught"
         )
     
     st.divider()
@@ -568,7 +568,7 @@ elif page == "Model Information":
         - 0.5 = Random guessing
         - 0.7-0.8 = Acceptable
         - 0.8-0.9 = Excellent
-        - **0.972 = Outstanding** ⭐
+        - **0.977 = Outstanding** ⭐
         
         **Why it matters:**
         - Robust to class imbalance
@@ -589,8 +589,8 @@ elif page == "Model Information":
     with col1:
         st.subheader("✅ Benefits")
         st.markdown("""
-        - **94% fraud detection rate**: Catches vast majority of fraudulent transactions
-        - **88% precision**: Minimizes false alarms for legitimate customers
+        - **90% fraud detection rate**: Catches vast majority of fraudulent transactions
+        - **96% precision**: Minimizes false alarms for legitimate customers
         - **Real-time predictions**: Sub-second inference time
         - **Scalable**: Handles high transaction volumes
         - **Explainable**: SHAP values provide reasoning for each decision
@@ -599,8 +599,8 @@ elif page == "Model Information":
     with col2:
         st.subheader("⚠️ Limitations")
         st.markdown("""
-        - **6% missed frauds**: Some sophisticated fraud may slip through
-        - **12% false positives**: Some legitimate transactions flagged
+        - **10% missed frauds**: Some sophisticated fraud may slip through
+        - **4% false positives**: Some legitimate transactions flagged
         - **Anonymized features**: Limited interpretability of V1-V28
         - **Requires retraining**: Model degrades as fraud patterns evolve
         - **Data dependency**: Performance tied to training data quality
@@ -661,3 +661,4 @@ elif page == "Feature Importance":
     - Negative values push toward legitimate
     - Magnitude = strength of impact
     """)
+
