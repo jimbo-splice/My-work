@@ -3,6 +3,7 @@ import streamlit as st
 import pickle
 import pandas as pd
 import numpy as np
+import os
 from PIL import Image
 
 st.set_page_config(page_title="Fraud Detection", page_icon="💳", layout="wide")
@@ -14,7 +15,8 @@ st.set_page_config(page_title="Fraud Detection", page_icon="💳", layout="wide"
 @st.cache_resource
 def load_model():
     try:
-        with open("fraud_model.pkl", "rb") as f:
+        model_path = os.path.join(os.path.dirname(__file__), "fraud_model.pkl")
+        with open(model_path, "rb") as f:
             return pickle.load(f)
     except FileNotFoundError:
         st.error("Model file not found. Ensure 'fraud_model.pkl' is in this directory.")
@@ -109,103 +111,160 @@ if page == "Prediction":
         ["Manual Input", "Random Transaction", "Upload CSV"]
     )
 
-# -------------------------------------------------------------------------
-# MANUAL INPUT
-# -------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # MANUAL INPUT
+    # -------------------------------------------------------------------------
 
-if input_method == "Manual Input":
-    st.header("📝 Manual Transaction Input")
-    
-    # Buttons
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button("🎲 Generate Random Values", use_container_width=True):
-            st.session_state['random_data'] = generate_random_transaction()
-    
-    with col2:
-        if st.button("🔄 Clear All Fields", use_container_width=True):
-            if 'random_data' in st.session_state:
-                del st.session_state['random_data']
-            st.rerun()
-    
-    # Initialize session state
-    if 'random_data' not in st.session_state:
-        st.session_state['random_data'] = None
-    
-    # Create input form
-    with st.form("transaction_form"):
-        st.subheader("Transaction Details")
+    if input_method == "Manual Input":
+        st.header("📝 Manual Transaction Input")
         
-        # Time, Amount, and Time_of_day
-        col1, col2, col3 = st.columns(3)
-        
+        # Buttons
+        col1, col2 = st.columns([1, 1])
         with col1:
-            time_val = st.session_state['random_data']['Time'] if st.session_state['random_data'] else 0.0
-            time = st.number_input(
-                "Time (seconds)",
-                min_value=0.0,
-                max_value=200000.0,
-                value=float(time_val),
-                step=100.0,
-                format="%.2f",
-                help="Seconds since first transaction"
-            )
+            if st.button("🎲 Generate Random Values", use_container_width=True):
+                st.session_state['random_data'] = generate_random_transaction()
         
         with col2:
-            amount_val = st.session_state['random_data']['Amount'] if st.session_state['random_data'] else 0.0
-            amount = st.number_input(
-                "Amount ($)",
-                min_value=0.0,
-                max_value=30000.0,
-                value=float(amount_val),
-                step=1.0,
-                format="%.2f"
-            )
+            if st.button("🔄 Clear All Fields", use_container_width=True):
+                if 'random_data' in st.session_state:
+                    del st.session_state['random_data']
+                st.rerun()
         
-        with col3:
-            time_of_day_val = st.session_state['random_data']['Time_of_day'] if st.session_state['random_data'] else 0.0
-            time_of_day = st.number_input(
-                "Time of Day (hour)",
-                min_value=0.0,
-                max_value=23.99,
-                value=float(time_of_day_val),
-                step=0.1,
-                format="%.2f",
-                help="Hour of day (0-23)"
-            )
+        # Initialize session state
+        if 'random_data' not in st.session_state:
+            st.session_state['random_data'] = None
         
-        st.divider()
-        st.subheader("PCA Features (V1-V28)")
-        st.caption("These are anonymized features from PCA transformation")
-        
-        # V features in grid layout (4 columns)
-        v_features = {}
-        cols = st.columns(4)
-        
-        for i in range(1, 29):
-            col_idx = (i - 1) % 4
-            with cols[col_idx]:
-                v_val = st.session_state['random_data'][f'V{i}'] if st.session_state['random_data'] else 0.0
-                v_features[f'V{i}'] = st.number_input(
-                    f"V{i}",
-                    value=float(v_val),
-                    step=0.1,
-                    format="%.6f",
-                    key=f"v{i}"
+        # Create input form
+        with st.form("transaction_form"):
+            st.subheader("Transaction Details")
+            
+            # Time, Amount, and Time_of_day
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                time_val = st.session_state['random_data']['Time'] if st.session_state['random_data'] else 0.0
+                time = st.number_input(
+                    "Time (seconds)",
+                    min_value=0.0,
+                    max_value=200000.0,
+                    value=float(time_val),
+                    step=100.0,
+                    format="%.2f",
+                    help="Seconds since first transaction"
                 )
+            
+            with col2:
+                amount_val = st.session_state['random_data']['Amount'] if st.session_state['random_data'] else 0.0
+                amount = st.number_input(
+                    "Amount ($)",
+                    min_value=0.0,
+                    max_value=30000.0,
+                    value=float(amount_val),
+                    step=1.0,
+                    format="%.2f"
+                )
+            
+            with col3:
+                time_of_day_val = st.session_state['random_data']['Time_of_day'] if st.session_state['random_data'] else 0.0
+                time_of_day = st.number_input(
+                    "Time of Day (hour)",
+                    min_value=0.0,
+                    max_value=23.99,
+                    value=float(time_of_day_val),
+                    step=0.1,
+                    format="%.2f",
+                    help="Hour of day (0-23)"
+                )
+            
+            st.divider()
+            st.subheader("PCA Features (V1-V28)")
+            st.caption("These are anonymized features from PCA transformation")
+            
+            # V features in grid layout (4 columns)
+            v_features = {}
+            cols = st.columns(4)
+            
+            for i in range(1, 29):
+                col_idx = (i - 1) % 4
+                with cols[col_idx]:
+                    v_val = st.session_state['random_data'][f'V{i}'] if st.session_state['random_data'] else 0.0
+                    v_features[f'V{i}'] = st.number_input(
+                        f"V{i}",
+                        value=float(v_val),
+                        step=0.1,
+                        format="%.6f",
+                        key=f"v{i}"
+                    )
+            
+            # Submit button
+            # Submit button
+            submitted = st.form_submit_button("🔍 Check for Fraud", use_container_width=True, type="primary")
+            
+            if submitted:
+                # Create dataframe with input data
+                input_data = {
+                    'Time': time, 
+                    'Amount': amount,
+                    **v_features,
+                    'Time_of_day': time_of_day
+                }
+                input_df = pd.DataFrame([input_data])
+                
+                # Ensure correct column order
+                expected_features = ['Time'] + [f'V{i}' for i in range(1, 29)] + ['Amount', 'Time_of_day']
+                input_df = input_df[expected_features]
+                
+                # Make prediction
+                try:
+                    prediction = model.predict(input_df)[0]
+                    prediction_proba = model.predict_proba(input_df)[0]
+                    
+                    # Display results
+                    st.divider()
+                    st.subheader("🎯 Prediction Results")
+                    
+                    col1, col2, col3 = st.columns(3)
+                    
+                    with col1:
+                        st.metric("Prediction", "🚨 FRAUD" if prediction == 1 else "✅ LEGITIMATE")
+                    
+                    with col2:
+                        st.metric("Fraud Probability", f"{prediction_proba[1]*100:.2f}%")
+                    
+                    with col3:
+                        st.metric("Confidence", f"{max(prediction_proba)*100:.2f}%")
+                    
+                    # Visual indicator
+                    if prediction == 1:
+                        st.error("⚠️ **HIGH RISK**: This transaction is predicted to be fraudulent!")
+                    else:
+                        st.success("✅ **LOW RISK**: This transaction appears to be legitimate.")
+                    
+                    # Show probability bar
+                    st.write("**Fraud Probability Distribution:**")
+                    st.progress(float(prediction_proba[1]))
+                    
+                    # Show input data
+                    with st.expander("📊 View Input Data"):
+                        st.dataframe(input_df.T)
+                
+                except Exception as e:
+                    st.error(f"Error making prediction: {str(e)}")
+                    st.info("Make sure all features match the model's expected input.")
+
+    # ============================================================================
+    # RANDOM TRANSACTION
+    # ============================================================================
+
+    elif input_method == "Random Transaction":
+        st.header("🎲 Random Transaction Generator")
         
-        # Submit button
-        submitted = st.form_submit_button("🔍 Check for Fraud", use_container_width=True, type="primary")
+        st.info("Generate a random transaction with realistic values between the 25th and 75th percentile.")
         
-        if submitted:
-            # Create dataframe with input data
-            input_data = {
-                'Time': time, 
-                'Amount': amount,
-                **v_features,
-                'Time_of_day': time_of_day
-            }
-            input_df = pd.DataFrame([input_data])
+        if st.button("🎲 Generate and Check Random Transaction", use_container_width=True, type="primary"):
+            # Generate random transaction
+            random_data = generate_random_transaction()
+            input_df = pd.DataFrame([random_data])
             
             # Ensure correct column order
             expected_features = ['Time'] + [f'V{i}' for i in range(1, 29)] + ['Amount', 'Time_of_day']
@@ -241,161 +300,105 @@ if input_method == "Manual Input":
                 st.write("**Fraud Probability Distribution:**")
                 st.progress(float(prediction_proba[1]))
                 
-                # Show input data
-                with st.expander("📊 View Input Data"):
-                    st.dataframe(input_df.T)
+                # Show generated data
+                with st.expander("📊 View Generated Transaction Data"):
+                    display_df = input_df.T
+                    display_df.columns = ['Value']
+                    st.dataframe(display_df, use_container_width=True)
             
             except Exception as e:
                 st.error(f"Error making prediction: {str(e)}")
-                st.info("Make sure all features match the model's expected input.")
+                with st.expander("Debug Info"):
+                    st.write("Input shape:", input_df.shape)
+                    st.write("Input columns:", input_df.columns.tolist())
+                    st.dataframe(input_df)
 
-# ============================================================================
-# RANDOM TRANSACTION
-# ============================================================================
+    # ============================================================================
+    # CSV UPLOAD
+    # ============================================================================
 
-elif input_method == "Random Transaction":
-    st.header("🎲 Random Transaction Generator")
-    
-    st.info("Generate a random transaction with realistic values between the 25th and 75th percentile.")
-    
-    if st.button("🎲 Generate and Check Random Transaction", use_container_width=True, type="primary"):
-        # Generate random transaction
-        random_data = generate_random_transaction()
-        input_df = pd.DataFrame([random_data])
+    elif input_method == "Upload CSV":
+        st.header("📤 Upload Transaction CSV")
         
-        # Ensure correct column order
-        expected_features = ['Time'] + [f'V{i}' for i in range(1, 29)] + ['Amount', 'Time_of_day']
-        input_df = input_df[expected_features]
+        st.info("Upload a CSV file with transaction data. Required columns: Time, Amount, V1-V28")
+        st.caption("Note: Time_of_day will be automatically calculated if not present")
         
-        # Make prediction
-        try:
-            prediction = model.predict(input_df)[0]
-            prediction_proba = model.predict_proba(input_df)[0]
-            
-            # Display results
-            st.divider()
-            st.subheader("🎯 Prediction Results")
-            
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.metric("Prediction", "🚨 FRAUD" if prediction == 1 else "✅ LEGITIMATE")
-            
-            with col2:
-                st.metric("Fraud Probability", f"{prediction_proba[1]*100:.2f}%")
-            
-            with col3:
-                st.metric("Confidence", f"{max(prediction_proba)*100:.2f}%")
-            
-            # Visual indicator
-            if prediction == 1:
-                st.error("⚠️ **HIGH RISK**: This transaction is predicted to be fraudulent!")
-            else:
-                st.success("✅ **LOW RISK**: This transaction appears to be legitimate.")
-            
-            # Show probability bar
-            st.write("**Fraud Probability Distribution:**")
-            st.progress(float(prediction_proba[1]))
-            
-            # Show generated data
-            with st.expander("📊 View Generated Transaction Data"):
-                display_df = input_df.T
-                display_df.columns = ['Value']
-                st.dataframe(display_df, use_container_width=True)
+        uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
         
-        except Exception as e:
-            st.error(f"Error making prediction: {str(e)}")
-            with st.expander("Debug Info"):
-                st.write("Input shape:", input_df.shape)
-                st.write("Input columns:", input_df.columns.tolist())
-                st.dataframe(input_df)
-
-# ============================================================================
-# CSV UPLOAD
-# ============================================================================
-
-elif input_method == "Upload CSV":
-    st.header("📤 Upload Transaction CSV")
-    
-    st.info("Upload a CSV file with transaction data. Required columns: Time, Amount, V1-V28")
-    st.caption("Note: Time_of_day will be automatically calculated if not present")
-    
-    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
-    
-    if uploaded_file is not None:
-        # Read CSV
-        df = pd.read_csv(uploaded_file)
-        
-        st.write(f"**Loaded {len(df)} transactions**")
-        st.dataframe(df.head())
-        
-        if st.button("🔍 Check All Transactions for Fraud", type="primary"):
-            try:
-                # Add Time_of_day if not present
-                if 'Time_of_day' not in df.columns and 'Time' in df.columns:
-                    df['Time_of_day'] = (df['Time'] / 3600) % 24
-                    st.info("✅ Added Time_of_day feature")
-                
-                # Ensure correct column order
-                expected_features = ['Time'] + [f'V{i}' for i in range(1, 29)] + ['Amount', 'Time_of_day']
-                df_features = df[expected_features]
-                
-                # Make predictions
-                predictions = model.predict(df_features)
-                prediction_probas = model.predict_proba(df_features)
-                
-                # Add results to dataframe
-                df['Prediction'] = predictions
-                df['Fraud_Probability'] = prediction_probas[:, 1]
-                df['Prediction_Label'] = df['Prediction'].map({0: 'Legitimate', 1: 'Fraud'})
-                
-                # Summary
-                st.divider()
-                st.subheader("📊 Summary")
-                
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    st.metric("Total Transactions", len(df))
-                
-                with col2:
-                    fraud_count = (predictions == 1).sum()
-                    st.metric("Flagged as Fraud", fraud_count)
-                
-                with col3:
-                    fraud_pct = (fraud_count / len(df)) * 100
-                    st.metric("Fraud Rate", f"{fraud_pct:.2f}%")
-                
-                # Show results
-                st.subheader("🎯 Detailed Results")
-                
-                # Filter options
-                filter_option = st.radio(
-                    "Filter results:",
-                    ["All Transactions", "Fraudulent Only", "Legitimate Only"]
-                )
-                
-                if filter_option == "Fraudulent Only":
-                    display_df = df[df['Prediction'] == 1]
-                elif filter_option == "Legitimate Only":
-                    display_df = df[df['Prediction'] == 0]
-                else:
-                    display_df = df
-                
-                st.dataframe(display_df, use_container_width=True)
-                
-                # Download results
-                csv = display_df.to_csv(index=False)
-                st.download_button(
-                    label="📥 Download Results as CSV",
-                    data=csv,
-                    file_name="fraud_predictions.csv",
-                    mime="text/csv"
-                )
+        if uploaded_file is not None:
+            # Read CSV
+            df = pd.read_csv(uploaded_file)
             
-            except Exception as e:
-                st.error(f"Error processing CSV: {str(e)}")
-                st.info("Make sure your CSV has all required columns: Time, Amount, V1-V28")
+            st.write(f"**Loaded {len(df)} transactions**")
+            st.dataframe(df.head())
+            
+            if st.button("🔍 Check All Transactions for Fraud", type="primary"):
+                try:
+                    # Add Time_of_day if not present
+                    if 'Time_of_day' not in df.columns and 'Time' in df.columns:
+                        df['Time_of_day'] = (df['Time'] / 3600) % 24
+                        st.info("✅ Added Time_of_day feature")
+                    
+                    # Ensure correct column order
+                    expected_features = ['Time'] + [f'V{i}' for i in range(1, 29)] + ['Amount', 'Time_of_day']
+                    df_features = df[expected_features]
+                    
+                    # Make predictions
+                    predictions = model.predict(df_features)
+                    prediction_probas = model.predict_proba(df_features)
+                    
+                    # Add results to dataframe
+                    df['Prediction'] = predictions
+                    df['Fraud_Probability'] = prediction_probas[:, 1]
+                    df['Prediction_Label'] = df['Prediction'].map({0: 'Legitimate', 1: 'Fraud'})
+                    
+                    # Summary
+                    st.divider()
+                    st.subheader("📊 Summary")
+                    
+                    col1, col2, col3 = st.columns(3)
+                    
+                    with col1:
+                        st.metric("Total Transactions", len(df))
+                    
+                    with col2:
+                        fraud_count = (predictions == 1).sum()
+                        st.metric("Flagged as Fraud", fraud_count)
+                    
+                    with col3:
+                        fraud_pct = (fraud_count / len(df)) * 100
+                        st.metric("Fraud Rate", f"{fraud_pct:.2f}%")
+                    
+                    # Show results
+                    st.subheader("🎯 Detailed Results")
+                    
+                    # Filter options
+                    filter_option = st.radio(
+                        "Filter results:",
+                        ["All Transactions", "Fraudulent Only", "Legitimate Only"]
+                    )
+                    
+                    if filter_option == "Fraudulent Only":
+                        display_df = df[df['Prediction'] == 1]
+                    elif filter_option == "Legitimate Only":
+                        display_df = df[df['Prediction'] == 0]
+                    else:
+                        display_df = df
+                    
+                    st.dataframe(display_df, use_container_width=True)
+                    
+                    # Download results
+                    csv = display_df.to_csv(index=False)
+                    st.download_button(
+                        label="📥 Download Results as CSV",
+                        data=csv,
+                        file_name="fraud_predictions.csv",
+                        mime="text/csv"
+                    )
+                
+                except Exception as e:
+                    st.error(f"Error processing CSV: {str(e)}")
+                    st.info("Make sure your CSV has all required columns: Time, Amount, V1-V28")
 
 # =============================================================================
 # MODEL INFORMATION PAGE
@@ -545,7 +548,8 @@ elif page == "Model Information":
     
     with col1:
         try:
-            roc_image = Image.open("roc_curve.png")
+            roc_path = os.path.join(os.path.dirname(__file__), "roc_curve.png")
+            roc_image = Image.open(roc_path)
             st.image(roc_image, use_container_width=True)
         except:
             st.warning("⚠️ ROC curve image not found. Generate with: `plot_roc_curve(model, X_test, y_test)`")
@@ -645,7 +649,8 @@ elif page == "Feature Importance":
     st.subheader("SHAP Summary Plot")
 
     try:
-        shap_image = Image.open("shap_summary.png")
+        shap_path = os.path.join(os.path.dirname(__file__), "shap_summary.png")
+        shap_image = Image.open(shap_path)
         st.image(shap_image, use_container_width=True)
     except:
         st.warning("SHAP image not found.")
