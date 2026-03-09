@@ -1,5 +1,7 @@
 # 💳 Credit Card Fraud Detection App
 
+https://james-mcf-ccfraud.streamlit.app/
+
 An interactive **machine learning web application** built with **Streamlit** that predicts whether a credit card transaction is fraudulent.  
 The app allows users to manually input transactions, generate realistic random transactions, or upload a CSV file to perform batch fraud detection.
 
